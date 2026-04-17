@@ -1,9 +1,12 @@
-#include <stdio.h>
 #include <bpf/libbpf.h>
 #include <bpf/bpf.h>
+#include <ncurses.h>
 
 int main() {
-  printf("This is just checking if codeberg ssh works now\n");
-  printf("Hello pnet!\n");
+  initscr();
+  printw("Hello world!!!");
+  refresh();
+  getch();
+  endwin();
   return 0;
 }
