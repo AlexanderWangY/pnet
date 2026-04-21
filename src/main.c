@@ -2,8 +2,15 @@
 #include <bpf/libbpf.h>
 #include <ncurses.h>
 #include <net/if.h>
+#include <signal.h>
 #include <stdio.h>
 #include <unistd.h>
+
+static volatile int running = 1;
+
+void signal_handler(int _) {
+  running = 0;
+}
 
 int main(int argc, char **argv) {
   if (argc != 2) {
@@ -17,6 +24,8 @@ int main(int argc, char **argv) {
     fprintf(stderr, "Failed to get interface index for %s.\n", ifname);
     return 1;
   }
+
+  signal(SIGINT, signal_handler);
 
   struct kern_bpf *skel;
 
@@ -41,7 +50,7 @@ int main(int argc, char **argv) {
 
   initscr();
 
-  for (;;) {
+  while (running) {
     int err = bpf_map__lookup_elem(skel->maps.packet_count, &key, sizeof(key),
                                    &value, sizeof(value), 0);
     if (err != 0) continue;

@@ -20,7 +20,7 @@ int count_packets(struct xdp_md *ctx) {
     __u64 init = 1;
     bpf_map_update_elem(&packet_count, &key, &init, BPF_ANY);
   }
-  return XDP_PASS;
+  return XDP_DROP;
 }
 
 char _license[] SEC("license") = "GPL";
