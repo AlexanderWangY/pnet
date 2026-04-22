@@ -1,14 +1,26 @@
 # pnet
 
-`pnet` is a lightweight eBPF (Extended Berkley Packet Filter) based process networking monitoring tool. It shows you in-depth information on packet transfer rates, totals, and more for each process.
+**Work in Progress**
 
-## Prereqs
+eBPF-based per-process network monitor for Linux. Tracks TCP bytes sent/received per process using kernel hooks.
 
-You must be on Linux for this to work. Preferably running kernel 5.15+ just to be 100% compatible with eBPF. Most modern distros work.
+## Requirements
 
-Furthermore, you must have llvm, clang, build-essential (gcc), libbpf, zlib1g, and bpftool installed on your system. You can probably find these through your package manager.
-
+- Linux kernel 5.15+
+- clang, gcc, libbpf, bpftool, ncurses, zlib
 
 ## Build
 
-Everything needed to build can be found in the `Makefile`.
+```
+make
+```
+
+## Usage
+
+```
+sudo ./build/pnet <interface>
+```
+
+## License
+
+GPL
