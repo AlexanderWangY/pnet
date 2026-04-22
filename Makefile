@@ -1,5 +1,5 @@
 CC := gcc
-CFLAGS := -Wall -Wextra -O2 -Iinclude
+CFLAGS := -Wall -Wextra -O2
 
 PKG_CFLAGS := $(shell pkg-config --cflags ncursesw)
 PKG_LIBS := $(shell pkg-config --libs ncursesw)

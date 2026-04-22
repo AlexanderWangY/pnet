@@ -40,30 +40,30 @@ int main(int argc, char **argv) {
     goto cleanup;
   }
 
-  if (bpf_xdp_attach(ifindex, bpf_program__fd(skel->progs.count_packets), 0, NULL) < 0) {
-    fprintf(stderr, "Failed to attach XDP to %s.\n", ifname);
-    goto cleanup;
-  }
+  // if (bpf_xdp_attach(ifindex, bpf_program__fd(skel->progs.count_packets), 0, NULL) < 0) {
+  //   fprintf(stderr, "Failed to attach XDP to %s.\n", ifname);
+  //   goto cleanup;
+  // }
 
-  __u32 key = 0;
-  __u64 value = 0;
+  // __u32 key = 0;
+  // __u64 value = 0;
 
-  initscr();
+  // initscr();
 
-  while (running) {
-    int err = bpf_map__lookup_elem(skel->maps.packet_count, &key, sizeof(key),
-                                   &value, sizeof(value), 0);
-    if (err != 0) continue;
-    clear();
-    printw("Packets processed: %llu", value);
-    refresh();
-    sleep(1);
-  }
+  // while (running) {
+  //   int err = bpf_map__lookup_elem(skel->maps.packet_count, &key, sizeof(key),
+  //                                  &value, sizeof(value), 0);
+  //   if (err != 0) continue;
+  //   clear();
+  //   printw("Packets processed: %llu", value);
+  //   refresh();
+  //   sleep(1);
+  // }
 
-  endwin();
+  // endwin();
 
 cleanup:
-  bpf_xdp_detach(ifindex, 0, NULL);
+  // bpf_xdp_detach(ifindex, 0, NULL);
   kern_bpf__destroy(skel);
   return 0;
 }
