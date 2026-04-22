@@ -1,1 +1,27 @@
-build
+# Build output
+build/
+
+# Generated BPF skeleton
+src/kern.skel.h
+
+# Object files
+*.o
+
+# Editor/IDE
+*.swp
+*.swo
+*~
+.vscode/
+.idea/
+
+# Debug
+*.dSYM/
+core
+vgcore.*
+
+# Compile commands (clangd/LSP)
+compile_commands.json
+
+# OS files
+.DS_Store
+Thumbs.db
