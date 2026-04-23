@@ -1,15 +1,8 @@
 #include "vmlinux.h"
+#include <bpf/bpf_tracing.h>
 #include <bpf/bpf_helpers.h>
 #include <bpf/bpf_endian.h>
-
-struct proc_meta {
-  __u64 bytes_sent;
-  __u64 bytes_recv;
-  __u64 send_calls;
-  __u64 recv_calls;
-  __u64 last_seen_ns;
-  char comm[16];
-};
+#include "common.h"
 
 struct {
   __uint(type, BPF_MAP_TYPE_HASH);
@@ -18,21 +11,16 @@ struct {
   __type(value, struct proc_meta);
 } proc_stats SEC(".maps");
 
-
-SEC("fexit/tcp_sendmsg")
-int fexit__tcp_sendmsg(struct sock *sk, struct msghdr *msg, size_t size, int retval) {
-  // retval is the # of bytes sent in this connection
-  if (retval <= 0) {
-    return 0;
-  }
+SEC("fexit/tcp_sendmsg_locked")
+int BPF_PROG(fexit__tcp_sendmsg, struct sock *sk, struct msghdr *msg, size_t size, int retval) {
+  if (retval <= 0) return 0;
 
   __u64 pid = bpf_get_current_pid_tgid();
   __u32 tgid = pid >> 32;
-
   struct proc_meta *pmeta = bpf_map_lookup_elem(&proc_stats, &tgid);
   if (pmeta) {
-        __sync_fetch_and_add(&pmeta->bytes_sent, retval);
-        __sync_fetch_and_add(&pmeta->send_calls, 1);
+    __sync_fetch_and_add(&pmeta->bytes_sent, (__u64)retval);
+    __sync_fetch_and_add(&pmeta->send_calls, 1);
   } else {
     struct proc_meta new = {};
     new.bytes_sent = retval;
@@ -43,13 +31,12 @@ int fexit__tcp_sendmsg(struct sock *sk, struct msghdr *msg, size_t size, int ret
   return 0;
 }
 
-SEC("fexit/tcp_cleanup_rbf")
-int fexit__tcp_cleanup_rbf(struct sock *sk, int copied) {
+SEC("fexit/tcp_cleanup_rbuf")
+int BPF_PROG(fexit__tcp_cleanup_rbuf, struct sock *sk, int copied) {
   if (copied <= 0) return 0;
 
   __u64 pid = bpf_get_current_pid_tgid();
   __u32 tgid = pid >> 32;
-
   struct proc_meta *pmeta = bpf_map_lookup_elem(&proc_stats, &tgid);
   if (pmeta) {
     __sync_fetch_and_add(&pmeta->bytes_recv, copied);
