@@ -1,5 +1,37 @@
 #include "ui.h"
-#include "ncurses.h"
+
+const col_def columns[COL_COUNT] = {
+  [COL_PID]     = { "PID",      7,  0 },
+  [COL_PROCESS] = { "PROCESS", 12,  1 },
+  [COL_UP]      = { "UP",      10,  0 },
+  [COL_DOWN]    = { "DOWN",    10,  0 },
+  [COL_TX]      = { "TX",      10,  0 },
+  [COL_RX]      = { "RX",      10,  0 },
+};
+
+void col_layout(int total_width, int offsets[COL_COUNT], int widths[COL_COUNT]) {
+  int fixed = 0;
+  int total_weight = 0;
+  for (int i = 0; i < COL_COUNT; i++) {
+    if (columns[i].weight == 0)
+      fixed += columns[i].min_width;
+    else
+      total_weight += columns[i].weight;
+  }
+
+  int flex = total_width - fixed;
+  if (flex < 0) flex = 0;
+
+  int pos = 0;
+  for (int i = 0; i < COL_COUNT; i++) {
+    offsets[i] = pos;
+    if (columns[i].weight == 0)
+      widths[i] = columns[i].min_width;
+    else
+      widths[i] = (total_weight > 0) ? (flex * columns[i].weight / total_weight) : columns[i].min_width;
+    pos += widths[i];
+  }
+}
 
 void draw_proclist_header(WINDOW *win) {
   werase(win);
@@ -24,24 +56,30 @@ void draw_proclist_summary(WINDOW *win) {
 }
 
 void draw_proclist_col_header(WINDOW *win) {
+  int offsets[COL_COUNT], widths[COL_COUNT];
+  col_layout(getmaxx(win), offsets, widths);
+
   werase(win);
-  wattron(win, COLOR_PAIR(CP_DEFAULT));
-  mvwprintw(win, 0, 1, "PID");
-  mvwprintw(win, 0, 11, "Process");
-  mvwprintw(win, 0, 25, "Up");
-  mvwprintw(win, 0, 37, "Down");
-  mvwprintw(win, 0, 50, "Total TX");
-  mvwprintw(win, 0, 65, "Total RX");
-  wnoutrefresh(win);    
+  wattron(win, COLOR_PAIR(CP_INVERTED));
+
+  int maxcol = getmaxx(win);
+  for (int x = 0; x < maxcol; x++)
+    mvwaddch(win, 0, x, ' ');
+
+  for (int i = 0; i < COL_COUNT; i++)
+    mvwprintw(win, 0, offsets[i] + 1, "%s", columns[i].label);
+
+  wattroff(win, COLOR_PAIR(CP_INVERTED));
+  wnoutrefresh(win);
 }
 
-void draw_proclist_footer(WINDOW *win) {  
+void draw_proclist_footer(WINDOW *win) {
   werase(win);
   wattron(win, COLOR_PAIR(CP_DEFAULT));
   mvwprintw(win, 0, 1, "\u2191\u2193 Navigate");
   mvwprintw(win, 0, 16, "Enter: detailed view");
   mvwprintw(win, 0, 40, "/: Filter");
-  wnoutrefresh(win);    
+  wnoutrefresh(win);
 }
 
 

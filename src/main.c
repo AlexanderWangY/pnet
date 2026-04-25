@@ -20,6 +20,10 @@ int main() {
 
   start_color();
   use_default_colors();
+  if (can_change_color()) {
+    init_color(COLOR_BLACK, 0, 0, 0);
+    init_color(COLOR_WHITE, 1000, 1000, 1000);
+  }
   init_pair(CP_DEFAULT,   -1,            -1);
   init_pair(CP_INVERTED,  COLOR_BLACK,   COLOR_WHITE);
   init_pair(CP_GREEN,     COLOR_GREEN,   -1);
