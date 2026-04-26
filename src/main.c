@@ -5,19 +5,9 @@
 #include <stdbool.h>
 #include <unistd.h>
 #include "ui.h"
+#include "state.h"
 
-int main() {
-  setlocale(LC_ALL, "");
-
-  bool running = true;
-
-  initscr();
-  cbreak();
-  noecho();
-  keypad(stdscr, TRUE);
-  timeout(100);
-  curs_set(0);
-
+void init_colors() {
   start_color();
   use_default_colors();
   if (can_change_color()) {
@@ -34,12 +24,28 @@ int main() {
   init_pair(CP_MAGENTA,   COLOR_MAGENTA, -1);
   init_pair(CP_GREEN_INV, COLOR_BLACK,   COLOR_GREEN);
   init_pair(CP_RED_INV,   COLOR_WHITE,   COLOR_RED);
+}
+
+int main() {
+  setlocale(LC_ALL, "");
+
+  bool running = true;
+
+  initscr();
+  cbreak();
+  noecho();
+  keypad(stdscr, TRUE);
+  timeout(100);
+  curs_set(0);
+  init_colors();
 
   WINDOW *header = newwin(1, COLS, 0, 0);
-  WINDOW *summary = newwin(1, COLS, 2, 0);
-  WINDOW *col_header = newwin(1, COLS, 4, 0);
-  WINDOW *proclist = newwin(LINES - 4, COLS, 6, 0); // LINES - 4 (header, summary, col_header, and footer)
+  WINDOW *summary = newwin(1, COLS, 1, 0);
+  WINDOW *col_header = newwin(1, COLS, 3, 0);
   WINDOW *footer = newwin(1, COLS, LINES - 1, 0);
+
+  int pad_height = MAX_PROC_LIST_SIZE;
+  WINDOW *proclist = newpad(pad_height, COLS);
 
   while (running) {
     draw_proclist_header(header);

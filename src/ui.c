@@ -1,4 +1,6 @@
 #include "ui.h"
+#include <ncurses.h>
+#include <string.h>
 
 const col_def columns[COL_COUNT] = {
   [COL_PID]     = { "PID",      7,  0 },
@@ -38,20 +40,39 @@ void draw_proclist_header(WINDOW *win) {
   wattron(win, COLOR_PAIR(CP_DEFAULT) | A_BOLD);
   mvwprintw(win, 0, 1, "pnet");
   wattroff(win, A_BOLD);
-  wattron(win, COLOR_PAIR(CP_INVERTED));
-  mvwprintw(win, 0, getmaxx(win) - 30, "Sort: [B] [N] [P]  [Q]uit");
-  wattroff(win, COLOR_PAIR(CP_INVERTED));
+  mvwprintw(win, 0, getmaxx(win) - 26, "Sort: [B] [N] [P]  [Q]uit");
   wnoutrefresh(win);
 }
 
 void draw_proclist_summary(WINDOW *win) {
   werase(win);
+
+  //TODO: remove hard coded and add app state function
+  const char *up_val = "12 MB/s";
+  const char *down_val = "8 KB/s";
+  int proc_count = 14;
+
+  
+  int offset = 1;
+
+  // Label
   wattron(win, COLOR_PAIR(CP_DEFAULT));
-  mvwprintw(win, 0, 1, "Total Up: ");
-  mvwprintw(win, 0, 11, "12 MB/s  ");
-  mvwprintw(win, 0, 25, "Total Down: ");
-  mvwprintw(win, 0, 37, "8 MB/s  ");
-  mvwprintw(win, 0, 50, "Processes: 14");
+  mvwprintw(win, 0, offset, "Total:");
+  wattroff(win, COLOR_PAIR(CP_DEFAULT));
+
+  offset += 7;
+
+  // Up speed  
+  wattron(win, COLOR_PAIR(CP_GREEN));
+  mvwprintw(win, 0, offset, "↑ %s", up_val);
+  wattroff(win, COLOR_PAIR(CP_GREEN));
+
+  offset += 2 + strlen(up_val) + 3;
+
+  wattron(win, COLOR_PAIR(CP_RED));
+  mvwprintw(win, 0, offset, "↓ %s", down_val);
+  wattroff(win, COLOR_PAIR(CP_RED));
+
   wnoutrefresh(win);
 }
 
