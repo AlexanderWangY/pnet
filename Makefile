@@ -1,4 +1,4 @@
-CC := gcc
+CC := clang
 CLANG := clang
 BPFTOOL := bpftool
 
