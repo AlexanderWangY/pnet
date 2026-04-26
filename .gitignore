@@ -1,6 +1,9 @@
 # Build output
 build/
 
+# clang cache
+.cache/
+
 # Generated BPF skeleton
 src/kern.skel.h
 
