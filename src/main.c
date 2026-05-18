@@ -2,10 +2,14 @@
 #include <locale.h>
 #include <ncurses.h>
 #include <net/if.h>
+#include <signal.h>
 #include <stdbool.h>
 #include <unistd.h>
 #include "ui.h"
 #include "state.h"
+#include "kern.skel.h"
+
+#define UNUSED(x) (void)(x)
 
 void init_colors() {
   start_color();
@@ -26,10 +30,40 @@ void init_colors() {
   init_pair(CP_RED_INV,   COLOR_WHITE,   COLOR_RED);
 }
 
+static volatile bool running = true;
+
+void signal_handler(int sig) {
+  UNUSED(sig);
+  running = false;
+}
+
 int main() {
   setlocale(LC_ALL, "");
 
-  bool running = true;
+  // Init app state
+  AppState *state = {0};
+  state__init_default_app(state);
+
+  // Init eBPF skeleton
+  struct kern_bpf *skel;
+  int err;
+
+  signal(SIGINT, signal_handler);
+  signal(SIGTERM, signal_handler);
+
+  skel = kern_bpf__open_and_load();
+  if (!skel) {
+    fprintf(stderr, "Failed to load skeleton.\n");
+    err = 1;
+    goto cleanup;
+  }
+
+  err = kern_bpf__attach(skel);
+  if (err) {
+    fprintf(stderr, "Failed to attach skeleton.\n");
+    goto cleanup;
+  }
+
 
   initscr();
   cbreak();
@@ -48,6 +82,8 @@ int main() {
   WINDOW *proclist = newpad(pad_height, COLS);
 
   while (running) {
+    
+    
     draw_proclist_header(header);
     draw_proclist_summary(summary);
     draw_proclist_col_header(col_header);
@@ -66,8 +102,9 @@ int main() {
     }
   }
 
+  cleanup:
+  kern_bpf__destroy(skel);
   endwin();
-
   return 0;
 }
 
