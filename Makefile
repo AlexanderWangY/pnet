@@ -6,6 +6,8 @@ BPFTOOL := bpftool
 SRC_DIR := src
 BUILD_DIR := build
 BPF_DIR := bpf
+TEST_DIR := test
+UNITY_DIR := unity
 
 # Architecture (for BPF CO-RE)
 ARCH := $(shell uname -m | sed 's/x86_64/x86/' | sed 's/aarch64/arm64/')
@@ -28,7 +30,9 @@ BPF_CFLAGS := \
 
 # Sources
 SRCS := $(wildcard $(SRC_DIR)/*.c)
+TEST_SRCS := $(wildcard $(TEST_DIR)/*.c)
 OBJS := $(patsubst $(SRC_DIR)/%.c,$(BUILD_DIR)/%.o,$(SRCS))
+TEST_BINS := $(patsubst $(TEST_DIR)/%.c,$(BUILD_DIR)/%,$(TEST_SRCS))
 TARGET := $(BUILD_DIR)/pnet
 
 # BPF sources
@@ -37,7 +41,7 @@ BPF_OBJ := $(BUILD_DIR)/kern.bpf.o
 BPF_SKEL := $(SRC_DIR)/kern.skel.h
 
 # ──────────────────────────────────────────────
-.PHONY: all run clean
+.PHONY: all run clean test
 
 all: $(TARGET)
 
@@ -59,6 +63,12 @@ $(TARGET): $(OBJS)
 
 $(BUILD_DIR):
 	mkdir -p $(BUILD_DIR)
+
+$(BUILD_DIR)/test_%: $(TEST_DIR)/test_%.c $(SRC_DIR)/process.c $(UNITY_DIR)/unity.c | $(BUILD_DIR)
+	$(CC) $(CFLAGS) -I$(SRC_DIR) -I$(UNITY_DIR) $^ -o $@
+
+test: $(TEST_BINS)
+	@for t in $(TEST_BINS); do echo "=== $$t ==="; ./$$t; done
 
 run: $(TARGET)
 	sudo $(TARGET)

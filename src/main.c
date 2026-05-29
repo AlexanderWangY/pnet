@@ -83,7 +83,6 @@ int main() {
 
   while (running) {
     
-    
     draw_proclist_header(header);
     draw_proclist_summary(summary);
     draw_proclist_col_header(col_header);
