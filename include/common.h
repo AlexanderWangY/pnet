@@ -14,4 +14,17 @@ struct proc_meta {
   char comm[16];
 };
 
+struct conn_key {
+  __u32 tgid;
+  __u32 src_ip;
+  __u32 dst_ip;
+  __u16 src_port;
+  __u16 dst_port;
+};
+
+struct conn_meta {
+  __u64 bytes_sent;
+  __u64 bytes_recv;
+};
+
 #endif
